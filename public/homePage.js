@@ -3,7 +3,7 @@
 const Logout = new LogoutButton();
 Logout.action = function act() {
     ApiConnector.logout(callback => {
-        if (callback.success === true) {
+        if (callback.success) {
             location.reload();
         } else {
             userForm.setLoginErrorMessage("Не удалось выйти");
@@ -12,7 +12,7 @@ Logout.action = function act() {
 };
 
 ApiConnector.current(callback => {
-    if (callback.success === true)
+    if (callback.success)
         ProfileWidget.showProfile(callback.data);
 
 });
@@ -35,7 +35,7 @@ const intervalID = setInterval(getcourse, 60000);
 
 function getcourse() {
     ApiConnector.getStocks(callback => {
-        if (callback.success === true) {
+        if (callback.success) {
             Rates.clearTable();
             Rates.fillTable(callback.data);
         }
@@ -46,7 +46,7 @@ const moneyManager = new MoneyManager();
 const favoritesWidget = new FavoritesWidget();
 moneyManager.addMoneyCallback = function addMoney(...args) {
     ApiConnector.addMoney(...args, callback => {
-        if (callback.success === true) {
+        if (callback.success) {
             ProfileWidget.showProfile(callback.data);
             favoritesWidget.setMessage(true, "Транзакция прошла успешно");
         } else {
@@ -56,7 +56,7 @@ moneyManager.addMoneyCallback = function addMoney(...args) {
 }
 moneyManager.conversionMoneyCallback = function convertMoney(...args) {
     ApiConnector.convertMoney(...args, callback => {
-        if (callback.success === true) {
+        if (callback.success) {
             ProfileWidget.showProfile(callback.data);
             favoritesWidget.setMessage(true, "Транзакция прошла успешно");
         } else {
@@ -67,7 +67,7 @@ moneyManager.conversionMoneyCallback = function convertMoney(...args) {
 
 moneyManager.sendMoneyCallback = function sendMoney(...args) {
     ApiConnector.transferMoney(...args, callback => {
-        if (callback.success === true) {
+        if (callback.success) {
             ProfileWidget.showProfile(callback.data);
             favoritesWidget.setMessage(true, "Транзакция прошла успешно");
         } else {
@@ -77,7 +77,7 @@ moneyManager.sendMoneyCallback = function sendMoney(...args) {
 }
 
 ApiConnector.getFavorites(callback => {
-    if (callback.success === true) {
+    if (callback.success) {
         favoritesWidget.clearTable();
         favoritesWidget.fillTable(callback.data);
         moneyManager.updateUsersList(callback.data);
@@ -87,7 +87,7 @@ ApiConnector.getFavorites(callback => {
 });
 favoritesWidget.addUserCallback = function addUserFav(...args) {
     ApiConnector.addUserToFavorites(...args, callback => {
-        if (callback.success === true) {
+        if (callback.success) {
             favoritesWidget.clearTable();
             favoritesWidget.fillTable(callback.data);
             moneyManager.updateUsersList(callback.data);
@@ -100,7 +100,7 @@ favoritesWidget.addUserCallback = function addUserFav(...args) {
 
 favoritesWidget.removeUserCallback = function removeUserFav(...args) {
     ApiConnector.removeUserFromFavorites(...args, callback => {
-        if (callback.success === true) {
+        if (callback.success) {
             favoritesWidget.clearTable();
             favoritesWidget.fillTable(callback.data);
             moneyManager.updateUsersList(callback.data);
