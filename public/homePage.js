@@ -1,19 +1,19 @@
 "use strict";
 
-const Logout = new LogoutButton();
-Logout.action = function act() {
-    ApiConnector.logout(callback => {
-        if (callback.success) {
+const logout = new LogoutButton();
+logout.action = function() {
+    ApiConnector.logout(response => {
+        if (response.success) {
             location.reload();
         } else {
-            userForm.setLoginErrorMessage("Не удалось выйти");
+            userForm.setLoginErrorMessage(response.error);
         }
     });
 };
 
-ApiConnector.current(callback => {
-    if (callback.success)
-        ProfileWidget.showProfile(callback.data);
+ApiConnector.current(response => {
+    if (response.success)
+        ProfileWidget.showProfile(response.data);
 
 });
 
@@ -29,84 +29,84 @@ xhr.open("GET", "https://www.cbr-xml-daily.ru/daily_json.js");
 xhr.responseType = 'json';
 xhr.send();
 */
-const Rates = new RatesBoard();
+const rates = new RatesBoard();
 getcourse();
-const intervalID = setInterval(getcourse, 60000);
+setInterval(getcourse, 60000);
 
 function getcourse() {
-    ApiConnector.getStocks(callback => {
-        if (callback.success) {
-            Rates.clearTable();
-            Rates.fillTable(callback.data);
+    ApiConnector.getStocks(response => {
+        if (response.success) {
+            rates.clearTable();
+            rates.fillTable(response.data);
         }
     });
 }
 
 const moneyManager = new MoneyManager();
 const favoritesWidget = new FavoritesWidget();
-moneyManager.addMoneyCallback = function addMoney(...args) {
-    ApiConnector.addMoney(...args, callback => {
-        if (callback.success) {
-            ProfileWidget.showProfile(callback.data);
-            favoritesWidget.setMessage(true, "Транзакция прошла успешно");
+moneyManager.addMoneyCallback = function({ currency, amount }) {
+    ApiConnector.addMoney({ currency, amount }, response => {
+        if (response.success) {
+            ProfileWidget.showProfile(response.data);
+            moneyManager.setMessage(true, "Транзакция прошла успешно");
         } else {
-            favoritesWidget.setMessage(false, "Транзакция не прошла");
+            moneyManager.setMessage(false, response.error);
         }
     });
 }
-moneyManager.conversionMoneyCallback = function convertMoney(...args) {
-    ApiConnector.convertMoney(...args, callback => {
-        if (callback.success) {
-            ProfileWidget.showProfile(callback.data);
-            favoritesWidget.setMessage(true, "Транзакция прошла успешно");
+moneyManager.conversionMoneyCallback = function({ fromCurrency, targetCurrency, fromAmount }) {
+    ApiConnector.convertMoney({ fromCurrency, targetCurrency, fromAmount }, response => {
+        if (response.success) {
+            ProfileWidget.showProfile(response.data);
+            moneyManager.setMessage(true, "Транзакция прошла успешно");
         } else {
-            favoritesWidget.setMessage(false, "Транзакция не прошла");
-        }
-    });
-}
-
-moneyManager.sendMoneyCallback = function sendMoney(...args) {
-    ApiConnector.transferMoney(...args, callback => {
-        if (callback.success) {
-            ProfileWidget.showProfile(callback.data);
-            favoritesWidget.setMessage(true, "Транзакция прошла успешно");
-        } else {
-            favoritesWidget.setMessage(false, "Транзакция не прошла");
+            moneyManager.setMessage(false, response.error);
         }
     });
 }
 
-ApiConnector.getFavorites(callback => {
-    if (callback.success) {
+moneyManager.sendMoneyCallback = function({ to, currency, amount }) {
+    ApiConnector.transferMoney({ to, currency, amount }, response => {
+        if (response.success) {
+            ProfileWidget.showProfile(response.data);
+            moneyManager.setMessage(true, "Транзакция прошла успешно");
+        } else {
+            moneyManager.setMessage(false, response.error);
+        }
+    });
+}
+
+ApiConnector.getFavorites(response => {
+    if (response.success) {
         favoritesWidget.clearTable();
-        favoritesWidget.fillTable(callback.data);
-        moneyManager.updateUsersList(callback.data);
+        favoritesWidget.fillTable(response.data);
+        moneyManager.updateUsersList(response.data);
     } else {
-        favoritesWidget.setMessage(false, "Не получилось обновить");
+        favoritesWidget.setMessage(false, response.error);
     }
 });
-favoritesWidget.addUserCallback = function addUserFav(...args) {
-    ApiConnector.addUserToFavorites(...args, callback => {
-        if (callback.success) {
+favoritesWidget.addUserCallback = function({ id, name }) {
+    ApiConnector.addUserToFavorites({ id, name }, response => {
+        if (response.success) {
             favoritesWidget.clearTable();
-            favoritesWidget.fillTable(callback.data);
-            moneyManager.updateUsersList(callback.data);
+            favoritesWidget.fillTable(response.data);
+            moneyManager.updateUsersList(response.data);
             favoritesWidget.setMessage(true, "Пользователь добавлен в избранные");
         } else {
-            favoritesWidget.setMessage(false, "Не получилось добавить пользователя в избранные");
+            favoritesWidget.setMessage(false, response.error);
         }
     });
 }
 
-favoritesWidget.removeUserCallback = function removeUserFav(...args) {
-    ApiConnector.removeUserFromFavorites(...args, callback => {
-        if (callback.success) {
+favoritesWidget.removeUserCallback = function(id) {
+    ApiConnector.removeUserFromFavorites(id, response => {
+        if (response.success) {
             favoritesWidget.clearTable();
-            favoritesWidget.fillTable(callback.data);
-            moneyManager.updateUsersList(callback.data);
+            favoritesWidget.fillTable(response.data);
+            moneyManager.updateUsersList(response.data);
             favoritesWidget.setMessage(true, "Пользователь удален из избранных");
         } else {
-            favoritesWidget.setMessage(false, "Не получилось удалить пользователя из избранных");
+            favoritesWidget.setMessage(false, response.error);
         }
     });
 }
